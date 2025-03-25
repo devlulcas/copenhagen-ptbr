@@ -1,44 +1,42 @@
 {
-	"name": "The Copenhagen Book",
-	"description": "A basic guideline on implementing auth for the web.",
+	"name": "O Livro de Copenhague",
+	"description": "Uma diretriz básica sobre como implementar a autenticação para a web.",
 	"domain": "https://thecopenhagenbook.com",
 	"twitter": "@pilcrowonpaper",
 	"sidebar": [
 		{
-			"title": "Guides",
+			"title": "Guias",
 			"pages": [
 				["Server-side tokens", "/server-side-tokens"],
-				["Sessions", "/sessions"],
-				["Password authentication", "/password-authentication"],
-				["Email verification", "/email-verification"],
-				["Password reset", "/password-reset"],
-				["Generating random values", "/random-values"],
+				["Sessões", "/sessions"],
+				["Autenticação com senha", "/password-authentication"],
+				["Verificação de e-mail", "/email-verification"],
+				["Redefinição de senha", "/password-reset"],
+				["Gerando valores aleatórios", "/random-values"],
 				["OAuth", "/oauth"],
-				["Multi-factor authentication (MFA)", "/mfa"],
+				["Autenticação de múltiplos fatores (MFA)", "/mfa"],
 				["WebAuthn", "/webauthn"],
-				["Cross-site request forgery (CSRF)", "/csrf"],
-				["Open redirect", "/open-redirect"]
+				["Falsificação de solicitação entre sites (CSRF)", "/csrf"],
+				["Redirecionamento aberto", "/open-redirect"]
 			]
 		},
 		{
-			"title": "Cryptography",
-			"pages": [
-				["ECDSA", "/cryptography/ecdsa"]
-			]
+			"title": "Criptografia",
+			"pages": [["ECDSA", "/cryptography/ecdsa"]]
 		},
 		{
 			"title": "Links",
 			"pages": [
 				[
-					"GitHub repository",
+					"Repositório GitHub",
 					"https://github.com/pilcrowonpaper/copenhagen"
 				],
 				["Twitter", "https://twitter.com/pilcrowonpaper"],
 				[
-					"OWASP Cheat Sheet Series",
+					"Série de Cheat Sheets da OWASP",
 					"https://cheatsheetseries.owasp.org"
 				],
-				["Donate", "https://github.com/sponsors/pilcrowOnPaper"]
+				["Doações", "https://github.com/sponsors/pilcrowOnPaper"]
 			]
 		}
 	]
