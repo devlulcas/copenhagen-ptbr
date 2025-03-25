@@ -1,11 +1,11 @@
 ---
-title: "The Copenhagen Book"
+title: "O Livro de Copenhague"
 ---
 
-# The Copenhagen Book
+# O Livro de Copenhague
 
-The Copenhagen Book provides a general guideline on implementing auth in web applications. It is free, open-source, and community-maintained. It may be opinionated or incomplete at times but we hope this fills a certain void in online resources. We recommend using this alongside the [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/index.html).
+O Livro de Copenhague oferece um guia geral sobre como implementar autenticação em aplicações web. É gratuito, de código aberto e mantido pela comunidade. Pode ser opinativo ou incompleto em alguns momentos, mas esperamos que ele preencha uma certa lacuna nos recursos online. Recomendamos usá-lo em conjunto com a [Série de Cheat Sheets da OWASP](https://cheatsheetseries.owasp.org/index.html).
 
-If you have any suggestions or concerns, consider opening a new issue.
+Se você tiver alguma sugestão ou preocupação, considere abrir uma nova issue.
 
-*Created by [Pilcrow](https://github.com/pilcrowOnPaper)*
+_Criado por [Pilcrow](https://github.com/pilcrowOnPaper)_

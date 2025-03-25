@@ -1,12 +1,12 @@
 ---
-title: "Elliptic curve digital signature algorithm (ECDSA)"
+title: "Algoritmo de Assinatura Digital com Curvas Elípticas (ECDSA)"
 ---
 
-# Elliptic curve digital signature algorithm (ECDSA)
+# Algoritmo de Assinatura Digital com Curvas Elípticas (ECDSA)
 
-ECDSA is a digital signature algorithm using elliptic-curve cryptography. A private key is used to sign a message and a public key is used verify the signature.
+ECDSA é um algoritmo de assinatura digital que utiliza criptografia de curva elíptica. Uma chave privada é usada para assinar uma mensagem, e uma chave pública é usada para verificar a assinatura.
 
-The message is hashed with algorithms like SHA-256 before signing.
+A mensagem passa por um hash (como SHA-256) antes de ser assinada.
 
 ```go
 import (
@@ -15,18 +15,18 @@ import (
 	"crypto/sha256"
 )
 
-msg := "Hello world!"
+msg := "Olá mundo!"
 hash := sha256.Sum256([]byte(msg))
 signature, err := ecdsa.SignASN1(rand.Reader, privateKey, hash[:])
 ```
 
-## Signatures
+## Assinaturas
 
-ECDSA signatures are represented using a pair of positive integers, (r, s).
+Assinaturas ECDSA são representadas usando um par de inteiros positivos, (r, s).
 
 ### IEEE P1363
 
-In the IEEE P1363 format, the signature is the concatenation of r and s. The values are encoded as big-endian bytes with a size equivalent to the curve size. For example, P-256 is 256 bits or 32 bytes in size.
+No formato IEEE P1363, a assinatura é a concatenação de r e s. Os valores são codificados como bytes em big-endian com tamanho equivalente ao da curva utilizada. Por exemplo, no P-256, cada valor tem 256 bits (ou 32 bytes).
 
 ```ts
 r || s;
@@ -34,7 +34,7 @@ r || s;
 
 ### PKIX
 
-In [RFC 5480](https://datatracker.ietf.org/doc/html/rfc5480) by the PKIX working group, the signature is ASN.1 DER encoded sequence of r and s.
+Na [RFC 5480](https://datatracker.ietf.org/doc/html/rfc5480) do grupo de trabalho PKIX, a assinatura é codificada em ASN.1 DER como uma sequência de r e s.
 
 ```
 SEQUENCE {
@@ -43,19 +43,21 @@ SEQUENCE {
 }
 ```
 
-## Public keys
+## Chaves Públicas
 
-ECDSA public keys are represented as a pair of positive integers, (x, y).
+Chaves públicas ECDSA são representadas como um par de inteiros positivos, (x, y).
 
 ### SEC1
 
-In [SEC 1](https://www.secg.org/sec1-v2.pdf), public keys can either be encoded in an uncompressed or compressed form. Uncompressed keys are the concatenation of x and y, with a leading `0x04` byte. The values are encoded as big-endian bytes with a size equivalent to the curve size. For example, P-256 is 256 bits or 32 bytes in size.
+No padrão [SEC 1](https://www.secg.org/sec1-v2.pdf), as chaves públicas podem ser codificadas em formato não comprimido (uncompressed) ou comprimido (compressed).
+
+Chaves não comprimidas são a concatenação de x e y, com um byte `0x04` no início. Os valores são codificados como bytes [big-endian](<https://pt.wikipedia.org/wiki/Extremidade_(ordena%C3%A7%C3%A3o)>) com um tamanho equivalente ao tamanho da curva. Por exemplo, P-256 tem 256 bits (ou 32 bytes) de tamanho.
 
 ```
 0x04 || x || y
 ```
 
-Compressed keys are the x value with a leading `0x02` byte if x is even or `0x03` byte if x is odd. The y value can be derived from x and the curve.
+Chaves comprimidas são o valor de x com um byte inicial 0x02 quando x for par ou um byte inicial 0x03 quando x for ímpar. O valor de y pode ser derivado de x e da curva.
 
 ```
 0x02 || x
@@ -64,7 +66,7 @@ Compressed keys are the x value with a leading `0x02` byte if x is even or `0x03
 
 ### PKIX
 
-In [RFC 5480](https://datatracker.ietf.org/doc/html/rfc5480) by the PKIX working group, the public key is represented as a `SubjectPublicKeyInfo` ASN.1 sequence. The `subjectPublicKey` is either the compressed or uncompressed SEC1 public key.
+Na (https://datatracker.ietf.org/doc/html/rfc5480 do grupo de trabalho PKIX, a chave pública é representada como uma sequência ASN.1 `SubjectPublicKeyInfo`. A `subjectPublicKey` pode ser a chave pública SEC1 comprimida ou não comprimida.
 
 ```
 SubjectPublicKeyInfo := SEQUENCE {
@@ -73,7 +75,7 @@ SubjectPublicKeyInfo := SEQUENCE {
 }
 ```
 
-The `AlgorithmIdentifier` for ECDSA is an ASN.1 sequence with the ECDSA object identifier (`1.2.840.10045.2.1`) and the curve (e.g. `1.2.840.10045.3.1.7` for P-256 curve)
+O `AlgorithmIdentifier` para ECDSA é uma sequência ASN.1 com o identificador de objeto ECDSA (`1.2.840.10045.2.1`) e a curva (por exemplo, `1.2.840.10045.3.1.7` para a curva P-256)
 
 ```
 AlgorithmIdentifier := SEQUENCE {
