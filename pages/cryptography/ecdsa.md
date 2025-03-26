@@ -4,9 +4,9 @@ title: "Algoritmo de Assinatura Digital com Curvas Elípticas (ECDSA)"
 
 # Algoritmo de Assinatura Digital com Curvas Elípticas (ECDSA)
 
-ECDSA é um algoritmo de assinatura digital que utiliza criptografia de curva elíptica. Uma chave privada é usada para assinar uma mensagem, e uma chave pública é usada para verificar a assinatura.
+ECDSA (_Elliptic Curve Digital Signature Algorithm_), que em português significa "Algoritmo de Assinatura Digital de Curva Elíptica", é um algoritmo de assinatura digital que utiliza criptografia de curva elíptica. Uma chave privada é usada para assinar uma mensagem, e uma chave pública é usada para verificar a assinatura.
 
-A mensagem passa por um hash (como SHA-256) antes de ser assinada.
+A mensagem passa por um _hash_ (como SHA-256) antes de ser assinada.
 
 ```go
 import (
@@ -26,7 +26,7 @@ Assinaturas ECDSA são representadas usando um par de inteiros positivos, (r, s)
 
 ### IEEE P1363
 
-No formato IEEE P1363, a assinatura é a concatenação de r e s. Os valores são codificados como bytes em big-endian com tamanho equivalente ao da curva utilizada. Por exemplo, no P-256, cada valor tem 256 bits (ou 32 bytes).
+No formato IEEE P1363, a assinatura é a concatenação de r e s. Os valores são codificados como _bytes_ em big-endian com tamanho equivalente ao da curva utilizada. Por exemplo, no P-256, cada valor tem 256 _bits_ (ou 32 _bytes_).
 
 ```ts
 r || s;
@@ -49,15 +49,15 @@ Chaves públicas ECDSA são representadas como um par de inteiros positivos, (x,
 
 ### SEC1
 
-No padrão [SEC 1](https://www.secg.org/sec1-v2.pdf), as chaves públicas podem ser codificadas em formato não comprimido (uncompressed) ou comprimido (compressed).
+No padrão [SEC 1](https://www.secg.org/sec1-v2.pdf), as chaves públicas podem ser codificadas em formato não comprimido (_uncompressed_) ou comprimido (_compressed_).
 
-Chaves não comprimidas são a concatenação de x e y, com um byte `0x04` no início. Os valores são codificados como bytes [big-endian](<https://pt.wikipedia.org/wiki/Extremidade_(ordena%C3%A7%C3%A3o)>) com um tamanho equivalente ao tamanho da curva. Por exemplo, P-256 tem 256 bits (ou 32 bytes) de tamanho.
+Chaves não comprimidas são a concatenação de x e y, com um byte `0x04` no início. Os valores são codificados como _bytes big-endian_ com um tamanho equivalente ao tamanho da curva. Por exemplo, P-256 tem 256 _bits_ (ou 32 _bytes_) de tamanho.
 
 ```
 0x04 || x || y
 ```
 
-Chaves comprimidas são o valor de x com um byte inicial 0x02 quando x for par ou um byte inicial 0x03 quando x for ímpar. O valor de y pode ser derivado de x e da curva.
+Chaves comprimidas são o valor de x com um byte inicial 0x02 quando x for par ou um _byte_ inicial 0x03 quando x for ímpar. O valor de y pode ser derivado de x e da curva.
 
 ```
 0x02 || x
