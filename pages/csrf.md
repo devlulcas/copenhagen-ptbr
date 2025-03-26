@@ -6,72 +6,72 @@ title: "Cross-site request forgery (CSRF)"
 
 ## Table of contents
 
-- [Overview](#overview)
-	- [Cross-site vs cross-origin](#cross-site-vs-cross-origin)
-- [Prevention](#prevention)
-	- [Anti-CSRF tokens](#anti-csrf-tokens)
-	- [Signed double-submit cookies](#signed-double-submit-cookies)
-	- [Origin header](#origin-header)
-- [SameSite cookie attribute](#samesite-cookie-attribute)
+-   [Introdução](#introdução)
+    -   [Cross-site vs cross-origin](#cross-site-vs-cross-origin)
+-   [Prevenção](#prevenção)
+    -   [Tokens Anti-CSRF](#tokens-anti-csrf)
+    -   [Cookies de envio duplo assinados](#cookies-de-envio-duplo-assinados)
+    -   [Cabeçalho Origin](#cabeçalho-origin)
+-   [Atributo SameSite em cookies](#atributo-same-site-em-cookies)
 
-## Overview
+## Introdução
 
-CSRF attacks allow an attacker to make authenticated requests on behalf of users when credentials are stored in cookies.
+Ataques CSRF (_Cross-Site Request Forgery_), que em português significa "Falsificação de Solicitação entre Sites", permitem que um invasor faça solicitações autenticadas em nome de usuários quando suas credenciais são armazenadas em cookies.
 
-When a client makes a cross-origin request, the browser sends a preflight request to check whether the request is allowed (CORS). However, for certain "simple" requests, including form submissions, this step is omitted. And since cookies are automatically included even for cross-origin requests, it allows a malicious actor to make requests as the authenticated user without ever directly stealing the token from any domain. The [same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy) prohibits cross-origin clients from reading responses by default, but the request still goes through.
+Quando um _client_ faz uma solicitação entre origens, o navegador envia uma solicitação de pré-voo para verificar se a solicitação é permitida (CORS). No entanto, para certas solicitações "simples", incluindo envios de formulário, essa etapa é omitida. Como _cookies_ são incluídos automaticamente mesmo para solicitações entre origens, isso permite que um ator malicioso faça solicitações como se fosse o usuário autenticado mesmo sem nunca roubar diretamente o token de qualquer domínio. A [política de mesma origem](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy) proíbe _clients_ entre origens de ler respostas por padrão, mas a solicitação ainda é processada.
 
-For example, if you are signed into `bank.com`, your session cookie will be sent alongside this form submission even if the form is hosted on a different domain.
+Por exemplo, se você estiver conectado ao `banco.com`, seu cookie de sessão será enviado junto com o envio deste formulário, mesmo que o formulário esteja hospedado em um domínio diferente.
 
 ```html
-<form action="https://bank.com/send-money" method="post">
-	<input name="recipient" value="attacker" />
-	<input name="value" value="$100" />
-	<button>Send money</button>
+<form action="https://banco.com/enviar-dinheiro" method="post">
+	<input name="receptor" value="hacker_do_mal" />
+	<input name="valor" value="R$100" />
+	<button>Enviar dinheiro</button>
 </form>
 ```
 
-This can just be a `fetch()` request so no user input is required.
+Também pode ser apenas uma solicitação `fetch()` para que nenhuma entrada do usuário seja necessária.
 
 ```ts
 const body = new URLSearchParams();
-body.set("recipient", "attacker");
-body.set("value", "$100");
+body.set("receptor", "hacker_do_mal");
+body.set("valor", "R$100");
 
-await fetch("https://bank.com/send-money", {
+await fetch("https://banco.com/enviar-dinheiro", {
 	method: "POST",
-	body
+	body,
 });
 ```
 
 ### Cross-site vs cross-origin
 
-While requests between 2 totally different domains are considered as both cross-site and cross-origin, those between 2 subdomains are not considered cross-site but are considered cross-origin requests. While the name cross-site request forgery implies cross-site requests, you should be strict by default and protect your application from cross-origin attacks as well.
+Enquanto requisições entre 2 domínios totalmente diferentes são consideradas tanto _cross-site_ quanto _cross-origin_, aquelas entre 2 subdomínios não são consideradas _cross-site_, mas são consideradas requisições _cross-origin_. Embora o nome "falsificação de solicitação entre sites" implique requisições _cross-site_, você deve ser estrito por padrão e proteger sua aplicação contra ataques _cross-origin_ também.
 
-## Prevention
+## Prevenção
 
-CSRF can be prevented by only accepting POST and POST-like requests made by browsers from a trusted origin.
+CSRF podem ser previnidos aceitando apenas requisições POST e similares feitas por navegadores de uma origem confiável.
 
-Protection must be implemented for all routes that deal with forms. If your application does not currently use forms, it may still be a good idea to at least [check the `Origin` header](#origin-header) to prevent future issues. It's also a generally good idea to only modify resources using POST and POST-like methods (PUT, DELETE, etc).
+A proteção deve ser implementada para todas as rotas que lidam com formulários. Se sua aplicação não usa formulários atualmente, ainda pode ser uma boa ideia pelo menos [verificar o cabeçalho `Origin`](#cabeçalho-origin) para prevenir problemas futuros. Também é uma boa ideia, em geral, modificar recursos apenas usando métodos POST e similares (PUT, DELETE, etc).
 
-For the common token-based approach, the token should not be single-use (e.g. a new token for every form submission) as it will break with a single back button. It is also crucial that your pages have a strict cross-origin resource sharing (CORS) policy. If `Access-Control-Allow-Credentials` is not strict, a malicious site can send a GET request to get an HTML form with a valid CSRF token.
+Para a abordagem com _tokens_, o _token_ não deve ser de uso único (por exemplo, um novo _token_ para cada envio de formulário) pois quebrará com um único clique no botão de voltar. É crucial que suas páginas tenham uma política estrita de compartilhamento de recursos entre origens (CORS). Se `Access-Control-Allow-Credentials` não for estrito, um site malicioso pode enviar uma solicitação GET para obter um formulário HTML com um _token_ CSRF válido.
 
-### Anti-CSRF tokens
+### Tokens Anti-CSRF
 
-This is a very simple method where each session has a unique CSRF [token](/server-side-tokens) associated with it.
+Esse é um método muito simples onde cada sessão tem um [token](/server-side-tokens) CSRF único associado a ela.
 
 ```html
 <form method="post">
-	<input name="message" />
-	<input type="hidden" name="__csrf" value="<CSRF_TOKEN>" />
-	<button>Submit</button>
+	<input name="mensagem" />
+	<input type="hidden" name="__csrf" value="<TOKEN_CSRF>" />
+	<button>Enviar</button>
 </form>
 ```
 
-### Signed double-submit cookies
+### Cookies de envio duplo assinados
 
-If storing the token server-side is not an option, using signed double-submit cookies is another approach. This is different from the basic double submit cookie in that the token included in the form is signed with a secret.
+Se armazenar o _token_ no servidor não for uma opção, usar cookies de envio duplo assinados é outra abordagem. Isso é diferente do cookie de envio duplo básico no qual o _token_ incluído no formulário é assinado com um segredo.
 
-A new [token](/server-side-tokens) is generated and hashed with HMAC SHA-256 using a secret key. Each HMAC must be linked to the user's session. You can alternatively encrypt the token with algorithms like AES.
+Um novo [_token_](/server-side-tokens) é gerado e transformado em um _hash_ com HMAC SHA-256 usando uma chave secreta. Cada HMAC deve estar vinculado à sessão do usuário. Você também pode criptografar o _token_ com algoritmos como AES.
 
 ```go
 func generateCSRFToken(sessionId string) (string, []byte) {
@@ -87,23 +87,25 @@ func generateCSRFToken(sessionId string) (string, []byte) {
 
 The token is stored as a cookie and the HMAC is embedded in the form. The cookie should have the `Secure`, `HttpOnly`, and `SameSite` attribute. To validate a request, the cookie can be used to verify the signature sent in the form data.
 
-#### Traditional double-submit cookies
+Esse _token_ é armazenado como um cookie e o HMAC é incorporado no formulário. O cookie deve ter os atributos `Secure`, `HttpOnly` e `SameSite`. Para validar uma requisição, o cookie pode ser usado para verificar a assinatura enviada nos dados do formulário.
 
-Regular double-submit cookies that aren't signed will still leave you vulnerable if an attacker has access to a subdomain of your application's domain. This would allow them to set their own double-submit cookies.
+#### Cookies de envio duplo tradicionais
 
-### Origin header
+Cookies de envio duplo tradicionais que não são assinados ainda deixarão você vulnerável se um atacante tiver acesso a um subdomínio do domínio de sua aplicação. Isso permitiria que eles definissem seus próprios cookies de envio duplo.
 
-A very simple way to prevent CSRF attacks is to check the `Origin` header of the request for non-GET requests. This is a relatively new header that includes the request [origin](https://developer.mozilla.org/en-US/docs/Glossary/Origin). If you rely on this header, it is crucial that your application does not use GET requests for modifying resources.
+### Cabeçalho Origin
 
-While the `Origin` header can be spoofed by using a custom client, the important part is that it can't be done using client-side JavaScript. Users are only vulnerable to CSRF when using a browser.
+Um jeito muito simples de se prevenir contra ataques CSRF é checar o cabeçalho `Origin` das requisições que não são GET. Esse é um cabeçalho relativamente novo que inclui a [origem](https://developer.mozilla.org/en-US/docs/Glossary/Origin) da requisição. Se você depender desse cabeçalho, é crucial que sua aplicação não use requisições GET para modificar recursos.
+
+Enquanto o cabeçalho `Origin` pode ser falsificado usando um cliente personalizado, a parte importante é que isso não pode ser feito usando JavaScript do lado do cliente. Usuários só são vulneráveis a CSRF quando usam um navegador.
 
 ```go
 func handleRequest(w http.ResponseWriter, request *http.Request) {
   	if request.Method != "GET" {
 		originHeader := request.Header.Get()
-		// You can also compare it against the Host or X-Forwarded-Host header.
+		// Você também pode compará-lo com o Host ou o cabeçalho X-Forwarded-Host.
 		if originHeader != "https://example.com" {
-			// Invalid request origin
+			// Origem não confiável
 			w.WriteHeader(403)
 			return
 		}
@@ -112,14 +114,12 @@ func handleRequest(w http.ResponseWriter, request *http.Request) {
 }
 ```
 
-The `Origin` header has been supported by all modern browsers since around 2020, though Chrome and Safari have supported it before that. If the `Origin` header is not included, do not allow the request.
+O cabeçalho `Origin` tem sido suportado por todos os navegadores modernos desde por volta de 2020, embora Chrome e Safari o tenham suportado antes disso. Se o cabeçalho `Origin` não estiver incluído, não permita a requisição.
 
-The `Referer` header is a similar header introduced before the `Origin` header. This can be used as a fallback if the `Origin` header isn't defined.
+O cabeçalho `Referer` é um cabeçalho similar introduzido antes do cabeçalho `Origin`. Isso pode ser usado como um _fallback_ se o cabeçalho `Origin` não estiver definido.
 
-## SameSite cookie attribute
+## Atributo SameSite em cookies
 
-Session cookies should have a `SameSite` flag. This flag determines when the browser includes the cookie in requests. `SameSite=Lax` cookies will only be sent on cross-site requests if the request uses a [safe HTTP method](https://developer.mozilla.org/en-US/docs/Glossary/Safe/HTTP) (such as GET), while `SameSite=Strict` cookies will not be sent on any cross site requests. We recommend using `Lax` as the default as `Strict` cookies will not be sent when a user accesses your website via an external link.
+_Cookies_ de sessão devem ter o atributo `SameSite`. Esse atributo determina quando o navegador inclui o cookie nas requisições. _Cookies_ `SameSite=Lax` só serão enviados em requisições entre sites se a requisição usar um [método HTTP seguro](https://developer.mozilla.org/en-US/docs/Glossary/Safe/HTTP) (como GET), enquanto _cookies_ `SameSite=Strict` não serão enviados em nenhuma requisição entre sites. Recomendamos usar `Lax` como padrão, já que _cookies_ `Strict` não serão enviados quando um usuário acessar seu site via um link externo.
 
-If you set the value to `Lax`, it is crucial that your application does not use GET requests for modifying resources. Browser support for the `SameSite` flag shows it is currently available to 96% of web users. It’s important to note that the flag only protects against *cross-site* request forgery (not *cross-origin* request forgery), and generally shouldn’t be your only layer of defense.
-
-
+Se você definir o valor como `Lax`, é crucial que sua aplicação não use requisições GET para modificar recursos. O suporte do navegador para a _flag_ `SameSite` mostra que ela está atualmente disponível para 96% dos usuários da _web_. É importante notar que a bandeira só protege contra falsificação de solicitação entre sites (não falsificação de solicitação entre origens) e geralmente não deve ser sua única camada de defesa.

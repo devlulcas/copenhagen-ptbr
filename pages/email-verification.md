@@ -1,74 +1,74 @@
 ---
-title: "Email verification"
+title: "Verificação de e-mail"
 ---
 
-# Email verification
+# Verificação de e-mail
 
-If your application requires user email addresses to be unique, email verification is a must. It discourages users from entering a random email address and, if password reset is implemented, allows users to take back accounts created with their email address. You may even want to block users from accessing your application's content until they verify their email address.
+Se sua aplicação requer que endereços de e-mail de usuários sejam únicos, a verificação de e-mail é essencial. Ela desencoraja usuários de inserir um endereço de e-mail aleatório e, se a redefinição de senha for implementada, permite que usuários recuperem contas criadas com seu endereço de e-mail. Você pode até querer bloquear usuários de acessar o conteúdo de sua aplicação até que verifiquem seu endereço de e-mail.
 
-*Email addresses are case-insensitive.* We recommend normalizing user-provided email addresses to lower case.
+_Endereços de e-mail são insensíveis a maiúsculas e minúsculas._ Recomendamos normalizar os endereços de e-mail fornecidos pelo usuário para minúsculas.
 
-## Table of contents
+## Tabela de conteúdos
 
-- [Input validation](#input-validation)
-	- [Sub-addressing](#sub-addressing)
-- [Email verification codes](#email-verification-codes)
-- [Email verification links](#email-verification-links)
-- [Changing emails](#changing-emails)
-- [Rate limiting](#rate-limiting)
+-   [Validação de entradas](#validação-de-entradas)
+    -   [Sub-endereçamento](#sub-endereçamento)
+-   [Códigos de verificação de e-mail](#códigos-de-verificação-de-e-mail)
+-   [Links de verificação de e-mail](#links-de-verificação-de-e-mail)
+-   [Alteração de e-mails](#alteração-de-e-mails)
+-   [Limitação de taxa](#limitação-de-taxa)
 
-## Input validation
+## Validação de Entradas
 
-Emails are complex and cannot be fully validated using Regex. Attempting to use Regex may also introduce [ReDoS vulnerabilities](https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS). Do not over-complicate it:
+E-mails são complexos e não podem ser totalmente validados usando Regex. Tentar usar Regex pode também introduzir [vulnerabilidades ReDoS](https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS). Não complique as coisas:
 
-- Includes at least 1 `@` character.
-- Has at least 1 character before the`@`.
-- The domain part includes at least 1 `.` and has at least 1 character before it.
-- It does not start or end with a whitespace.
-- Maximum of 255 characters.
+-   Inclui pelo menos 1 caractere `@`.
+-   Tem pelo menos 1 caractere antes do `@`.
+-   A parte do domínio inclui pelo menos 1 `.` e tem pelo menos 1 caractere antes dele.
+-   Não começa ou termina com um espaço em branco.
+-   Máximo de 255 caracteres.
 
-### Sub-addressing
+### Sub-endereçamento
 
-Some email providers, including Google, allow users to specify a tag that will be ignored by their servers. For example, a user with `user@example.com` can use `user+foo@example.com` and `user+bar@example.com`. You can block emails with `+` to prevent users from making multiple accounts with the same email address, but users would still be able to use temporary email addresses or just create a new email address. Never silently remove the tag portion from the user input as an email address with `+` can just be a regular, valid email address.
+Alguns provedores de e-mail, incluindo o Google, permitem que os usuários especifiquem uma tag que será ignorada por seus servidores. Por exemplo, um usuário com `user@example.com` pode usar `user+foo@example.com` e `user+bar@example.com`. Você pode bloquear e-mails com `+` para impedir que os usuários criem múltiplas contas com o mesmo endereço de e-mail, mas os usuários ainda poderiam usar endereços de e-mail temporários ou simplesmente criar um novo endereço de e-mail. Nunca remova silenciosamente a parte da tag da entrada do usuário, pois um endereço de e-mail com `+` pode ser um endereço de e-mail regular e válido.
 
-## Email verification codes
+## Códigos de Verificação de E-mail
 
-One way to verify email is to send a secret code stored in the server to the user's mailbox.
+Uma maneira de verificar o e-mail é enviar um código secreto armazenado no servidor para a caixa de correio do usuário.
 
-This approach has some advantages over using links:
+Esta abordagem tem algumas vantagens em comparação com o uso de links:
 
-- People are increasingly less likely to click on links.
-- Some filters may automatically classify emails with links as spam or phishing.
-- Using verification links may introduce friction if the user wants to finish the process on a device that does not have access to the verification message, or on a device that cannot open links.
+-   As pessoas estão cada vez menos propensas a clicar em links.
+-   Alguns filtros podem classificar automaticamente e-mails com links como spam ou phishing.
+-   O uso de links de verificação pode introduzir atrito se o usuário quiser concluir o processo em um dispositivo que não tenha acesso à mensagem de verificação, ou em um dispositivo que não possa abrir links.
 
-The verification code should be at least 8 digits if the code is numeric, and at least 6 digits if it's alphanumeric. Use a stronger code if the verification is part of a secure process, like creating a new account or changing contact information. You should avoid using both lowercase and uppercase letters. You may also want to remove numbers and letters that can be misread (0, O, 1, I, etc). It must be generated using a cryptographically secure random generator.
+O código de verificação deve ter pelo menos 8 dígitos se for numérico, e pelo menos 6 dígitos se for alfanumérico. Use um código mais forte se a verificação fizer parte de um processo seguro, como criar uma nova conta ou alterar informações de contato. Você deve evitar usar letras minúsculas e maiúsculas. Você também pode querer remover números e letras que possam ser mal interpretados (0, O, 1, I, etc.). O código deve ser gerado usando um gerador aleatório criptograficamente seguro.
 
-A single verification code should be tied to a single user and email. This is especially important if you allow users to change their email address after they're sent an email. Each code should be valid for at least 15 minutes (anywhere between 1-24 hours is recommended). The code must be single-use and immediately invalidated after validation. A new verification code should be generated every time the user asks for another email/code.
+Um único código de verificação deve estar vinculado a um único usuário e e-mail. Isso é especialmente importante se você permitir que os usuários alterem seu endereço de e-mail após o envio de um e-mail. Cada código deve ser válido por pelo menos 15 minutos (recomenda-se entre 1-24 horas). O código deve ser de uso único e imediatamente invalidado após a validação. Um novo código de verificação deve ser gerado cada vez que o usuário solicitar outro e-mail/código.
 
-Similar to a regular login form, throttling or rate-limiting based on the user ID must be implemented. A good limit is around 10 attempts per hour. Assuming proper limiting is implemented, the code can be valid for up to 24 hours. You should generate and resend a new code if the user-provided code has expired.
+Semelhante a um formulário de login regular, deve ser implementada uma limitação ou restrição de taxa com base no ID do usuário. Um bom limite é em torno de 10 tentativas por hora. Assumindo que a limitação adequada seja implementada, o código pode ser válido por até 24 horas. Você deve gerar e reenviar um novo código se o código fornecido pelo usuário tiver expirado.
 
-All sessions of a user should be invalidated when their email is verified.
+Todas as sessões de um usuário devem ser invalidadas quando seu e-mail for verificado.
 
-## Email verification links
+## Links de Verificação de E-mail
 
-An alternative way to verify emails is to use a verification link that contains a long, random, single-use [token](/server-side-tokens).
+Uma forma alternativa de verificar e-mails é usar um link de verificação que contém um [_token_](/server-side-tokens) longo, aleatório e de uso único.
 
 ```
 https://example.com/verify-email/<TOKEN>
 ```
 
-A single token should be tied to a single user and email. This is especially important if you allow users to change their email address after they're sent an email. Tokens should be single-use and be immediately deleted from storage after verification. The token should be valid for at least 15 minutes (anywhere between 1-24 hours is recommended). When a user asks for another verification email, you can resend the previous token instead of generating a new token if that token is still within expiration.
+Um único token deve estar vinculado a um único usuário e e-mail. Isso é especialmente importante se você permitir que os usuários alterem seu endereço de e-mail após o envio de um e-mail. Os tokens devem ser de uso único e ser imediatamente excluídos do armazenamento após a verificação. O token deve ser válido por pelo menos 15 minutos (recomenda-se entre 1-24 horas). Quando um usuário solicitar outro e-mail de verificação, você pode reenviar o token anterior em vez de gerar um novo token se esse token ainda estiver dentro do prazo de validade.
 
-Make sure to set the [Referrer Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy) tag to `strict-origin` (or equivalent) for any path that includes tokens to protect the tokens from referer leakage.
+Certifique-se de definir a tag de [Política de Referência](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy) como `strict-origin` (ou equivalente) para qualquer caminho que inclua tokens para proteger os tokens de vazamento de referência (do inglês: _*referer leakage*_).
 
-All sessions should be invalidated when the email is verified (and create a new one for the current user so they stay signed in).
+Todas as sessões devem ser invalidadas quando o e-mail for verificado (e criar uma nova para o usuário atual para que continuem conectados).
 
-## Changing emails
+## Alteração de E-mails
 
-The user should be asked for their password, or if [multi-factor authentication](/mfa) is enabled, authenticated with one of their second factors. The new email should be stored separately from the current email until it's verified. For example, the new email could be stored with the verification token/code.
+O usuário deve ser solicitado a fornecer sua senha, ou se a [autenticação de múltiplos fatores](/mfa) estiver habilitada, autenticado com um de seus fatores secundários. O novo e-mail deve ser armazenado separadamente do e-mail atual até que seja verificado. Por exemplo, o novo e-mail pode ser armazenado com o token/código de verificação.
 
-A notification should be sent to the previous email address when the user changes their email.
+Uma notificação deve ser enviada para o endereço de e-mail anterior quando o usuário alterar seu e-mail.
 
-## Rate limiting
+## Limitação de Taxa
 
-Any endpoint that can send emails should have strict rate limiting implemented.
+Qualquer _endpoint_ que possa enviar e-mails deve ter uma limitação de taxa estrita implementada.
